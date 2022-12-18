@@ -53,18 +53,18 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     root->AddChild(cube);
     
 	
-    auto mesh = cube->GetMeshList();
-    Eigen::MatrixXi F;
-    Eigen::MatrixXd V;
-    V = mesh[0]->data[0].vertices;
-    F = mesh[0]->data[0].faces;
-	tree1.init(V, F);
-	mesh = cyl->GetMeshList();
+	auto mesh = cube->GetMeshList();
+	Eigen::MatrixXi F, F2;
+	Eigen::MatrixXd V, V2;
 	V = mesh[0]->data[0].vertices;
 	F = mesh[0]->data[0].faces;
-	tree2.init(V, F);
-
-
+	tree1.init(V, F);
+	auto mesh2 = cyl->GetMeshList();
+	V2 = mesh2[0]->data[0].vertices;
+	F2 = mesh2[0]->data[0].faces;
+	tree2.init(V2, F2);
+	
+	
 }
 
 void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
@@ -76,7 +76,38 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
 	
 	cube->Translate(0.005f*dx, Axis::X);
 	cube->Translate(0.005f*dy, Axis::Y);
+	//iscollide();
 	
+}
+
+bool BasicScene::iscollide() {
+	igl::AABB<Eigen::MatrixXd, 3> temp1 = tree1;
+	igl::AABB<Eigen::MatrixXd, 3> temp2 = tree1;
+	while (!temp1.is_leaf() && !temp2.is_leaf()) {
+		if (temp1.m_box.intersects(temp2.m_box)) {
+			std::cout << "intersect";
+			if (temp1.m_left->m_box.intersects(temp2.m_left->m_box)) {
+				std::cout << "left, left";
+				temp1 = *temp1.m_left;
+				temp2 = *temp2.m_left;
+			}else if (temp1.m_left->m_box.intersects(temp2.m_right->m_box)) {
+				std::cout << "left, right";
+				temp1 = *temp1.m_left;
+				temp2 = *temp2.m_right;
+			}
+			else if (temp1.m_right->m_box.intersects(temp2.m_right->m_box)) {
+				std::cout << "right, right";
+				temp1 = *temp1.m_right;
+				temp2 = *temp2.m_right;
+			}
+			else if (temp1.m_right->m_box.intersects(temp2.m_left->m_box)) {
+				std::cout << "right, left";
+				temp1 = *temp1.m_right;
+				temp2 = *temp2.m_left;
+			}
+		}
+	}
+	return true;
 }
 
 void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode, int action, int mods) 
