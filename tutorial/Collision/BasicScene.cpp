@@ -38,8 +38,10 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     //sphere1 = Model::Create( "sphere",sphereMesh, material);
     cyl = Model::Create( "cyl", cylMesh, material);
     cube = Model::Create( "cube", cubeMesh, material);
-  
-    cyl->Translate({2,0,0});
+	
+
+
+    //cyl->Translate({2,0,0});
 	cube->Translate({-2,0,0 });
     //cyl->Scale(20.0f);
 	//cube->Scale(20.0f);
@@ -57,13 +59,19 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 	Eigen::MatrixXi F, F2;
 	Eigen::MatrixXd V, V2;
 	V = mesh[0]->data[0].vertices;
+	std::cout << "before move";
+	std::cout << V;
+
 	F = mesh[0]->data[0].faces;
 	tree1.init(V, F);
 	auto mesh2 = cyl->GetMeshList();
 	V2 = mesh2[0]->data[0].vertices;
 	F2 = mesh2[0]->data[0].faces;
 	tree2.init(V2, F2);
-	
+	std::cout << "after move";
+	std::cout << V2;
+
+	//current problem the mesh vertices index doesnt change when the object moves
 	
 }
 
@@ -74,8 +82,11 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform4f("Kai", 1.0f, 1.0f, 1.0f, 1.0f);
     //cube->Rotate(0.01f, Axis::XYZ);
 	
+
 	cube->Translate(0.005f*dx, Axis::X);
 	cube->Translate(0.005f*dy, Axis::Y);
+	std::cout << cube->GetTranslation();
+
 	//iscollide();
 	
 }
